@@ -1,0 +1,5 @@
+requests
+fake_useragent
+pysocks
+beautifulsoup4
+selenium
