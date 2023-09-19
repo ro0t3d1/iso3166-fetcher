@@ -2,7 +2,7 @@ import requests
 import re
 
 from . import USER_AGENT
-from .model import CountryEnum, SubdivisionEnum
+from .model import CountryEnum, SubdivisionWithParentEnum
 
 from bs4 import BeautifulSoup
 
@@ -75,11 +75,11 @@ class GeonamesFetcher:
     def __create_subdivision_enum(self, code, name, type, country, sanitise_type=True):
         code = '{0}-{1}'.format(country.code, code)
         if sanitise_type:
-            return SubdivisionEnum(code=code, name=self.__clean_name(name),
-                                   type=self.__get_type_alias(self.__create_type(type)), parent=country.code,
-                                   country=country)
-        return SubdivisionEnum(code=code, name=self.__clean_name(name), type=type, parent=country.code,
-                               country=country)
+            return SubdivisionWithParentEnum(code=code, name=self.__clean_name(name),
+                                             type=self.__get_type_alias(self.__create_type(type)), parent=country.code,
+                                             country=country)
+        return SubdivisionWithParentEnum(code=code, name=self.__clean_name(name), type=type, parent=country.code,
+                                         country=country)
 
     def __get_type_alias(self, type):
         for subdivision_alias in self.SubdivisionTypeAlias:
@@ -109,7 +109,7 @@ class GeonamesFetcher:
 
     @staticmethod
     def __get_html(url):
-        headers = {'User-Agent': USER_AGENT.random}
+        headers = {'User-Agent': USER_AGENT.get_random_user_agent()}
         response = requests.get(url, headers=headers)
         return BeautifulSoup(response.content, "html.parser")
 

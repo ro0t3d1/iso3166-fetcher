@@ -1,7 +1,7 @@
 import re
 
 from . import USER_AGENT
-from .model import SubdivisionEnum, CountryEnum
+from .model import SubdivisionWithParentEnum, CountryEnum
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -16,7 +16,7 @@ class IsoFetcher:
     SUBDIVISION_URL = 'https://www.iso.org/obp/ui/#iso:code:3166:{0}'
 
     driver_options = Options()
-    driver_options.add_argument(f'user-agent={USER_AGENT.random}')
+    driver_options.add_argument(f'user-agent={USER_AGENT.get_random_user_agent()}')
     driver_options.add_argument("--headless")
 
     driver_path = None
@@ -91,8 +91,8 @@ class IsoFetcher:
                 if not parent:
                     parent = country.code
                 subdivisions.setdefault(code, {}).setdefault(language,
-                                                             SubdivisionEnum(code, name, type, parent,
-                                                                             country))
+                                                             SubdivisionWithParentEnum(code, name, type, parent,
+                                                                                       country))
 
         language_subdivisions = []
         for subdivision in subdivisions:

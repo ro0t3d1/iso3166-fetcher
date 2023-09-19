@@ -1,5 +1,5 @@
 requests
-fake_useragent
+random_user_agent
 pysocks
 beautifulsoup4
 selenium
