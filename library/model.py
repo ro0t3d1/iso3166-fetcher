@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 
 replacements_for = {
+    "IN-OD": "IN_OR",
+    "IN-CG": "IN_CT",
+    "IN-TS": "IN_TG",
+    "IN-UK": "IN_UT",
     "ZA-GP": "ZA_GT",
     "ZA-KZN": "ZA_NL",
     "KZ-75": "KZ_ALA",

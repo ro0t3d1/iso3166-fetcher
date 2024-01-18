@@ -30,6 +30,7 @@ class IsoFetcher:
         countries = []
         try:
             driver.get(self.COUNTRY_URL)
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))).click()
             WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "gwt-uid-12"))).click()
             WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'v-button-go')]"))).click()
