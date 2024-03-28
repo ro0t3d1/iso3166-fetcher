@@ -22,14 +22,14 @@ replacements_of = {
     "KZ_YUZ": "KZ-61",
     "KZ_ZAP": "KZ-27",
     "KZ_ZHA": "KZ-31",
-    "NO_O1": "NO-30",
-    "NO_O2": "NO-30",
-    "NO_O4": "NO-34",
-    "NO_O5": "NO-34",
-    "NO_O6": "NO-30",
-    "NO_O7": "NO-38",
-    "NO_O8": "NO-38",
-    "NO_O9": "NO-42",
+    "NO_01": "NO-30",
+    "NO_02": "NO-30",
+    "NO_04": "NO-34",
+    "NO_05": "NO-34",
+    "NO_06": "NO-30",
+    "NO_07": "NO-38",
+    "NO_08": "NO-38",
+    "NO_09": "NO-42",
     "NO_10": "NO-42",
     "NO_12": "NO-46",
     "NO_14": "NO-46",
@@ -63,10 +63,12 @@ class SubdivisionWithParentEnum:
             up_to_date = '{0}("{1}", {2}, {3}),\n'.format(self.code.replace('-', '_'), self.name,
                                                           to_type(self.type), self.parent.replace('-', '_'))
 
-            for replacement in self.__get_keys_by_value(replacements_of, self.code):
+            replacements = self.__get_keys_by_value(replacements_of, self.code)
+            replacements.sort()
+            for replacement in replacements:
                 up_to_date += '{0}("{1}", {2}, {3}, {4}),\n'.format(replacement, self.name,
-                                                                   to_type(self.type), self.parent.replace('-', '_'),
-                                                                   self.code.replace('-', '_'))
+                                                                    to_type(self.type), self.parent.replace('-', '_'),
+                                                                    self.code.replace('-', '_'))
 
             return up_to_date
         else:
