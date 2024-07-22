@@ -1,3 +1,4 @@
+import csv
 import requests
 import re
 
@@ -9,6 +10,7 @@ from bs4 import BeautifulSoup
 
 class GeonamesFetcher:
     COUNTRIES_URL = 'https://www.geonames.org/countries/'
+    CURRENCIES_URL = 'https://download.geonames.org/export/dump/countryInfo.txt'
 
     SubdivisionTypeAlias = {
         "department": ["département", "departamento"],
@@ -19,6 +21,23 @@ class GeonamesFetcher:
         "CX": "C_AS",
         "TL": "C_AS"
     }
+
+    CurrencyAlias = {
+        "SLL": "SLE"
+    }
+
+    def get_currencies_by_country(self):
+        country_currency_map = {}
+        response = self.__get_response(self.CURRENCIES_URL)
+        lines = response.text.splitlines()
+        reader = csv.reader(lines, delimiter='\t')
+
+        for row in reader:
+            if row[0].startswith('#') or len(row) < 12:
+                continue
+            country_currency_map[row[0]] = self.CurrencyAlias.get(row[10], row[10])
+
+        return country_currency_map
 
     def get_countries(self):
         countries = []
@@ -32,7 +51,7 @@ class GeonamesFetcher:
                     continent_code = self.CountyContinentAlias[country_code]
                 else:
                     continent_code = 'C_{0}'.format(cells[8].get_text().strip())
-                countries.append(CountryEnum(country_code, country_name, continent_code))
+                countries.append(CountryEnum(country_code, country_name, continent_code, ''))
         return countries
 
     def get_continent_subdivisions(self, countries):
@@ -109,9 +128,12 @@ class GeonamesFetcher:
 
     @staticmethod
     def __get_html(url):
+        return BeautifulSoup(GeonamesFetcher.__get_response(url).content, "html.parser")
+
+    @staticmethod
+    def __get_response(url):
         headers = {'User-Agent': USER_AGENT.get_random_user_agent()}
-        response = requests.get(url, headers=headers)
-        return BeautifulSoup(response.content, "html.parser")
+        return requests.get(url, headers=headers)
 
     @staticmethod
     def __clean_name(name):

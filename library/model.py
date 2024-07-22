@@ -45,9 +45,22 @@ class CountryEnum:
     code: str
     name: str
     continent: str
+    currency: str
 
     def to_java_enum(self):
+        if self.currency:
+            return '{0}("{1}", {2}, {3}),\n'.format(self.code, self.name, self.continent, self.currency)
+
         return '{0}("{1}", {2}),\n'.format(self.code, self.name, self.continent)
+
+
+@dataclass(frozen=True)
+class CurrencyEnum:
+    code: str
+    name: str
+
+    def to_java_enum(self):
+        return '{0}("{1}"),\n'.format(self.code, self.name)
 
 
 @dataclass

@@ -107,6 +107,28 @@ if __name__ == '__main__':
     for continent in continent_subdivisions:
         write_file_from_dataclass(continent, sort_subdivisions(continent_subdivisions[continent]))
 
+    # Get currencies from iso.org
+    currencies = iso_fetcher.get_currencies()
+
+    # Get currencies from geonames
+    country_currency_map = geonames_fetcher.get_currencies_by_country()
+
+    # Filter currencies not used on any country
+    currencies = {currency for currency in currencies if currency.code in country_currency_map.values()}
+
+    # Get all currency iso codes
+    currency_iso_codes = {currency.code for currency in currencies}
+
+    # Write currencies
+    currencies = sorted(currencies, key=lambda currencies: currencies.code)
+    write_file_from_dataclass('currencies', currencies)
+
+    # Add currency on each country
+    for country in countries:
+        currency_iso = country_currency_map.get(country.code)
+        if currency_iso and currency_iso in currency_iso_codes:
+            country.currency = country_currency_map.get(country.code)
+
     # Write countries
     countries.sort(key=lambda country: country.code)
     write_file_from_dataclass('countries', countries)

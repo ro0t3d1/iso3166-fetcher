@@ -1,7 +1,10 @@
 import re
 
+import requests
+import xml.etree.ElementTree as ET
+
 from . import USER_AGENT
-from .model import SubdivisionWithParentEnum, CountryEnum
+from .model import SubdivisionWithParentEnum, CountryEnum, CurrencyEnum
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -14,6 +17,7 @@ from selenium.webdriver.chrome.options import Options
 class IsoFetcher:
     COUNTRY_URL = 'https://www.iso.org/obp/ui/#search'
     SUBDIVISION_URL = 'https://www.iso.org/obp/ui/#iso:code:3166:{0}'
+    CURRENCY_URL = 'https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml'
 
     driver_options = Options()
     driver_options.add_argument(f'user-agent={USER_AGENT.get_random_user_agent()}')
@@ -48,7 +52,7 @@ class IsoFetcher:
                 if cells:
                     name = self.__clean_name(cells[0].get_text()).strip()
                     code = cells[2].get_text().strip()
-                    countries.append(CountryEnum(code, name, ''))
+                    countries.append(CountryEnum(code, name, '', ''))
             return countries
         except Exception as ex:
             print("Failed loading countries. Ex: {0}".format(ex))
@@ -63,6 +67,22 @@ class IsoFetcher:
         except Exception as ex:
             print("Failed getting subdivisions for country {0}. Ex: {1}".format(country.code, ex))
             return []
+
+    def get_currencies(self):
+        currencies = set()
+
+        response = requests.get(self.CURRENCY_URL)
+        root = ET.fromstring(response.text)
+
+        for ccy_ntry in root.findall('.//CcyNtry'):
+            ccy_nm = ccy_ntry.find('CcyNm')
+            ccy = ccy_ntry.find('Ccy')
+            if ccy is not None and ccy_nm is not None:
+                currency_name = ccy_nm.text
+                currency_code = ccy.text
+                currencies.add(CurrencyEnum(currency_code, currency_name))
+
+        return currencies
 
     def __get_subdivisions_html(self, country):
         driver = webdriver.Chrome(self.driver_path, options=self.driver_options)
