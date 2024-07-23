@@ -3,3 +3,4 @@ random_user_agent
 pysocks
 beautifulsoup4
 selenium==4.5.0
+iso4217parse

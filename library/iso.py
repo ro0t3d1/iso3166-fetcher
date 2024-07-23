@@ -1,5 +1,5 @@
+import iso4217parse
 import re
-
 import requests
 import xml.etree.ElementTree as ET
 
@@ -80,9 +80,16 @@ class IsoFetcher:
             if ccy is not None and ccy_nm is not None:
                 currency_name = ccy_nm.text
                 currency_code = ccy.text
-                currencies.add(CurrencyEnum(currency_code, currency_name))
+                currencies.add(
+                    CurrencyEnum(currency_code, currency_name, self.get_currency_symbol(currency_code))
+                )
 
         return currencies
+
+    @staticmethod
+    def get_currency_symbol(currency_code):
+        currency = iso4217parse.by_alpha3(currency_code)
+        return currency.symbols[0] if currency and currency.symbols else ''
 
     def __get_subdivisions_html(self, country):
         driver = webdriver.Chrome(self.driver_path, options=self.driver_options)

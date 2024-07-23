@@ -58,9 +58,10 @@ class CountryEnum:
 class CurrencyEnum:
     code: str
     name: str
+    symbol: str
 
     def to_java_enum(self):
-        return '{0}("{1}"),\n'.format(self.code, self.name)
+        return '{0}("{1}", "{2}"),\n'.format(self.code, self.name, self.symbol)
 
 
 @dataclass
