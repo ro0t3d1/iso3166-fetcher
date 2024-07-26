@@ -2,6 +2,7 @@ import os
 from library.iso import IsoFetcher
 from library.geonames import GeonamesFetcher
 from library.model import to_type_enum
+from library.ifcmarkets import CryptoCurrencyFetcher
 from collections import OrderedDict
 
 # Configure chromedriver path
@@ -12,6 +13,7 @@ OUTPUT_FOLDER_PATH = 'output'
 
 iso_fetcher = IsoFetcher(CHROME_DRIVER_PATH)
 geonames_fetcher = GeonamesFetcher()
+crypto_currency_fetcher = CryptoCurrencyFetcher()
 
 
 def write_file_from_dataclass(entity_name, entities):
@@ -107,27 +109,34 @@ if __name__ == '__main__':
     for continent in continent_subdivisions:
         write_file_from_dataclass(continent, sort_subdivisions(continent_subdivisions[continent]))
 
-    # Get currencies from iso.org
-    currencies = iso_fetcher.get_currencies()
+    # Get crypto currencies from ifcmarkets
+    crypto_currencies = sorted(crypto_currency_fetcher.get_crypto_currencies(), key=lambda currencies: currencies.code)
 
-    # Get currencies from geonames
-    country_currency_map = geonames_fetcher.get_currencies_by_country()
+    # Write crypto currencies
+    write_file_from_dataclass('crypto_currencies', crypto_currencies)
 
-    # Filter currencies not used on any country
-    currencies = {currency for currency in currencies if currency.code in country_currency_map.values()}
+    # Get fiat currencies from iso.org
+    fiat_currencies = iso_fetcher.get_currencies()
 
-    # Get all currency iso codes
-    currency_iso_codes = {currency.code for currency in currencies}
+    # Get fiat currencies from geonames
+    country_fiat_currency_map = geonames_fetcher.get_currencies_by_country()
 
-    # Write currencies
-    currencies = sorted(currencies, key=lambda currencies: currencies.code)
-    write_file_from_dataclass('currencies', currencies)
+    # Filter fiat currencies not used on any country
+    fiat_currencies = {fiat_currency for fiat_currency in fiat_currencies if
+                       fiat_currency.code in country_fiat_currency_map.values()}
 
-    # Add currency on each country
+    # Get all fiat currency iso codes
+    fiat_currency_iso_codes = {currency.code for currency in fiat_currencies}
+
+    # Write fiat currencies
+    fiat_currencies = sorted(fiat_currencies, key=lambda currencies: currencies.code)
+    write_file_from_dataclass('fiat_currencies', fiat_currencies)
+
+    # Add fiat currency on each country
     for country in countries:
-        currency_iso = country_currency_map.get(country.code)
-        if currency_iso and currency_iso in currency_iso_codes:
-            country.currency = country_currency_map.get(country.code)
+        currency_iso = country_fiat_currency_map.get(country.code)
+        if currency_iso and currency_iso in fiat_currency_iso_codes:
+            country.fiat_currency = country_fiat_currency_map.get(country.code)
 
     # Write countries
     countries.sort(key=lambda country: country.code)
