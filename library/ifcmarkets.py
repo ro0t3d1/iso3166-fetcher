@@ -10,7 +10,7 @@ class CryptoCurrencyFetcher:
     CRYPTO_CURRENCIES_URL = 'https://www.ifcmarkets.com/en/cryptocurrency-abbreviations'
 
     TestCurrencies = [
-        CurrencyEnum('TST', 'TST', '', True),
+        CurrencyEnum('TST', 'Standard Token', '', True),
         CurrencyEnum('TETH', 'Test Ethereum', '', True)
     ]
 
