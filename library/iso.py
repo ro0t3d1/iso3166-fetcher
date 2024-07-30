@@ -81,7 +81,7 @@ class IsoFetcher:
                 currency_name = ccy_nm.text
                 currency_code = ccy.text
                 currencies.add(
-                    CurrencyEnum(currency_code, currency_name, self.get_currency_symbol(currency_code))
+                    CurrencyEnum(currency_code, currency_name, self.get_currency_symbol(currency_code), False)
                 )
 
         return currencies

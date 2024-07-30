@@ -59,8 +59,11 @@ class CurrencyEnum:
     code: str
     name: str
     symbol: str
+    test: bool
 
     def to_java_enum(self):
+        if self.test:
+            return '{0}("{1}", true),\n'.format(self.code, self.name)
         return '{0}("{1}", "{2}"),\n'.format(self.code, self.name, self.symbol)
 
 
