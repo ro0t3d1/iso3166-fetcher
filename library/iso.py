@@ -1,3 +1,4 @@
+import csv
 import iso4217parse
 import re
 import requests
@@ -7,6 +8,7 @@ from . import USER_AGENT
 from .model import SubdivisionWithParentEnum, CountryEnum, CurrencyEnum
 
 from bs4 import BeautifulSoup
+from io import StringIO
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
@@ -18,6 +20,7 @@ class IsoFetcher:
     COUNTRY_URL = 'https://www.iso.org/obp/ui/#search'
     SUBDIVISION_URL = 'https://www.iso.org/obp/ui/#iso:code:3166:{0}'
     CURRENCY_URL = 'https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml'
+    DEPRECATED_CURRENCY_URL = 'https://raw.githubusercontent.com/datasets/currency-codes/master/data/codes-all.csv'
 
     driver_options = Options()
     driver_options.add_argument(f'user-agent={USER_AGENT.get_random_user_agent()}')
@@ -50,7 +53,7 @@ class IsoFetcher:
             for row in rows:
                 cells = row.find_all("td")
                 if cells:
-                    name = self.__clean_name(cells[0].get_text()).strip()
+                    name = self.__clean_region_name(cells[0].get_text()).strip()
                     code = cells[2].get_text().strip()
                     countries.append(CountryEnum(code, name, '', ''))
             return countries
@@ -86,6 +89,20 @@ class IsoFetcher:
 
         return currencies
 
+    def get_deprecated_currencies(self):
+        currencies = set()
+
+        resp = requests.get(self.DEPRECATED_CURRENCY_URL)
+        data = csv.DictReader(StringIO(resp.text))
+        for row in data:
+            if row.get("WithdrawalDate", "").strip():
+                currencies.add(
+                    CurrencyEnum(row.get('AlphabeticCode'), self.__clean_currency_name(row.get('Currency')),
+                                 self.get_currency_symbol(row.get('AlphabeticCode')), False)
+                )
+
+        return currencies
+
     @staticmethod
     def get_currency_symbol(currency_code):
         currency = iso4217parse.by_alpha3(currency_code)
@@ -111,9 +128,9 @@ class IsoFetcher:
         for row in rows:
             cells = row.find_all("td")
             if cells:
-                type = self.__clean_type(cells[0].get_text().strip())
-                code = self.__clean_code(cells[1].get_text().strip())
-                name = self.__clean_name(cells[2].get_text().strip())
+                type = cells[0].get_text().strip()
+                code = self.__clean_subdivision_code(cells[1].get_text().strip())
+                name = self.__clean_region_name(cells[2].get_text().strip())
                 language = cells[4].get_text().strip()
                 parent = cells[6].get_text().strip()
                 if not parent:
@@ -132,7 +149,7 @@ class IsoFetcher:
         return language_subdivisions
 
     @staticmethod
-    def __clean_name(name):
+    def __clean_region_name(name):
         name = name.replace('*', '')
         search_result = re.search(r"(?P<name>.*) \(see also separate country code entry under [A-Z]{2}\)", name)
         if search_result:
@@ -140,9 +157,12 @@ class IsoFetcher:
         return name
 
     @staticmethod
-    def __clean_code(code):
+    def __clean_subdivision_code(code):
         return code.replace('*', '')
 
     @staticmethod
-    def __clean_type(type):
-        return type
+    def __clean_currency_name(name):
+        cleaned = re.sub(r'"[^"]*"\s*', '', name)
+        cleaned = cleaned.replace('\u00A0', ' ')
+        cleaned = re.sub(r'\s+', ' ', cleaned)
+        return cleaned.strip()

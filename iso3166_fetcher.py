@@ -125,6 +125,8 @@ if __name__ == '__main__':
     fiat_currencies = {fiat_currency for fiat_currency in fiat_currencies if
                        fiat_currency.code in country_fiat_currency_map.values()}
 
+    fiat_currencies.update(iso_fetcher.get_deprecated_currencies())
+
     # Get all fiat currency iso codes
     fiat_currency_iso_codes = {currency.code for currency in fiat_currencies}
 

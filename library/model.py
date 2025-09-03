@@ -66,6 +66,12 @@ class CurrencyEnum:
             return '{0}("{1}", true),\n'.format(self.code, self.name)
         return '{0}("{1}", "{2}"),\n'.format(self.code, self.name, self.symbol)
 
+    def __hash__(self):
+        return hash(self.code)
+
+    def __eq__(self, other):
+        return self.code == other.code
+
 
 @dataclass
 class SubdivisionWithParentEnum:
